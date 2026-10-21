@@ -1,0 +1,47 @@
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Entornos virtuales de Python
+.venv/
+venv/
+env/
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Bases de datos locales
+*.sqlite3
+*.db
+
+# Archivos de registro
+*.log
+logs/
+
+# Cobertura de pruebas
+.coverage
+htmlcov/
+
+# Claves y certificados privados
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Respaldos de bases de datos
+*.dump
+*.backup
+backups/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos del editor
+.vscode/
+.idea/

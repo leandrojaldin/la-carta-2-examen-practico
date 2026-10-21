@@ -1,0 +1,60 @@
+
+name: lacarta-examen
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lacarta
+      POSTGRES_USER: lacarta
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Required}
+    volumes:
+      - datos_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lacarta -d lacarta"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: ./django_app
+    command: python manage.py migrate --noinput
+    restart: "no"
+    environment: &django_env
+      DB_NAME: lacarta
+      DB_USER: lacarta
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Required}
+      DB_HOST: db
+      DB_PORT: "5432"
+      SECRET_KEY: ${SECRET_KEY:?Required}
+      DEBUG: "False"
+    volumes:
+      - ./django_app/carta/migrations:/app/carta/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+
+  django:
+    build: ./django_app
+    restart: unless-stopped
+    environment: *django_env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg2://lacarta:${POSTGRES_PASSWORD:?Required}@db:5432/lacarta
+      SECRET_KEY: ${SECRET_KEY:?Required}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Required}
+      JWT_EXPIRES_MINUTES: "60"
+      JWT_ISSUER: la-carta
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  datos_pg:

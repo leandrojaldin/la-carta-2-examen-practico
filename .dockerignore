@@ -1,0 +1,35 @@
+
+# Git
+.git
+.gitignore
+
+# Variables de entorno
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Entornos virtuales y temporales
+.venv/
+venv/
+env/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Claves y certificados
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Bases locales y respaldos
+*.sqlite3
+*.dump
+*.backup
+
+# Otros
+Dockerfile
+docker-compose.yml
