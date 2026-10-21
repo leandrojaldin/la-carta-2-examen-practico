@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}Página no encontrada{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; margin-top: 50px;">
+        <h2>¡Ups! Error 404</h2>
+        <p>Parece que te perdiste. El restaurante o la página que buscas no existe en nuestra base de datos.</p>
+        <br>
+        <a href="{{ url_for('listar_restaurantes') }}">Volver al listado de restaurantes</a>
+    </div>
+{% endblock %}

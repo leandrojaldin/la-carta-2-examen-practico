@@ -1,0 +1,67 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Cocina - La Carta{% endblock %}
+
+{% block content %}
+<h2>Cola de cocina</h2>
+
+{% if pedidos %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Pedido</th>
+                <th>Restaurante</th>
+                <th>Estado</th>
+                <th>Platos</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for pedido in pedidos %}
+            <tr>
+                <td>#{{ pedido.id }}</td>
+                <td>{{ pedido.restaurante.nombre }}</td>
+                <td>{{ pedido.estado }}</td>
+
+                <td>
+                    {% for item in pedido.items %}
+                        {{ item.cantidad }} x {{ item.plato.nombre }}
+                        <br>
+                    {% endfor %}
+                </td>
+
+                <td>
+                    {% set siguiente = transiciones.get(pedido.estado) %}
+
+                    {% if siguiente and 'update:pedidos' in permisos %}
+                        <form method="POST"
+                              action="{{ url_for('avanzar_pedido_web', pedido_id=pedido.id) }}">
+
+                            <input type="hidden"
+                                   name="estado"
+                                   value="{{ siguiente }}">
+
+                            <button type="submit">
+                                Avanzar a {{ siguiente }}
+                            </button>
+                        </form>
+                    {% else %}
+                        Sin acciones disponibles
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No hay pedidos activos.</p>
+{% endif %}
+
+<p>
+    <a href="{{ url_for('listar_restaurantes') }}">
+        Volver a la carta
+    </a>
+</p>
+{% endblock %}

@@ -1,0 +1,54 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Pedido confirmado - La Carta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2>Pedido #{{ pedido.id }}</h2>
+
+    <p>
+        Restaurante:
+        <strong>{{ pedido.restaurante.nombre }}</strong>
+    </p>
+
+    <p>
+        Estado:
+        <strong>{{ pedido.estado }}</strong>
+    </p>
+
+    <h3>Detalle del pedido</h3>
+
+    <table class="table" border="1">
+        <thead>
+            <tr>
+                <th>Plato</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in pedido.items %}
+            <tr>
+                <td>{{ item.plato.nombre }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>Bs {{ item.precio_unitario }}</td>
+                <td>
+                    Bs {{ item.cantidad * item.precio_unitario }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Total: Bs {{ pedido.total }}</h3>
+
+    <a href="{{ url_for('listar_restaurantes') }}">
+        Volver a la carta
+    </a>
+
+</div>
+{% endblock %}

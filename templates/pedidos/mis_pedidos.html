@@ -1,0 +1,58 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Mis pedidos - La Carta{% endblock %}
+
+{% block content %}
+<h2>Mis pedidos</h2>
+
+{% if pedidos %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Pedido</th>
+                <th>Restaurante</th>
+                <th>Estado</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for pedido in pedidos %}
+            <tr>
+                <td>#{{ pedido.id }}</td>
+                <td>{{ pedido.restaurante.nombre }}</td>
+                <td>{{ pedido.estado }}</td>
+                <td>Bs {{ pedido.total }}</td>
+
+                <td>
+                    <a href="{{ url_for('detalle_pedido_cliente', pedido_id=pedido.id) }}">
+                        Ver detalle
+                    </a>
+
+                    {% if pedido.estado == 'pendiente' %}
+                        <form method="POST"
+                              action="{{ url_for('cancelar_pedido_web', pedido_id=pedido.id) }}"
+                              style="display:inline;">
+
+                            <button type="submit">
+                                Cancelar pedido
+                            </button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Todavía no tienes pedidos.</p>
+{% endif %}
+
+<p>
+    <a href="{{ url_for('listar_restaurantes') }}">
+        Volver a la carta
+    </a>
+</p>
+{% endblock %}

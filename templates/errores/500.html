@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}Error interno{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; margin-top: 50px;">
+        <h2>¡Houston, tenemos un problema! (Error 500)</h2>
+        <p>Ocurrió un error inesperado en el servidor. Nuestro equipo de soporte ya ha sido notificado.</p>
+        <br>
+        <a href="{{ url_for('listar_restaurantes') }}">Volver al inicio a un lugar seguro</a>
+    </div>
+{% endblock %}

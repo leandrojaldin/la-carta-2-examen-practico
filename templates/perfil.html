@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Bienvenido a tu Perfil</h2>
+    <div class="alert alert-success">
+        <p>Has iniciado sesión exitosamente con los siguientes datos (Solo para prueba):</p>
+        <ul>
+            <li><strong>Usuario:</strong> {{ usuario_ingresado }}</li>
+            <li><strong>Contraseña (No seguro):</strong> {{ contrasena_ingresada }}</li>
+        </ul>
+    </div>
+    <a href="/login" class="btn btn-secondary">Volver al Login</a>
+</div>
+{% endblock %}

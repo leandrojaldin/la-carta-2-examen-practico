@@ -1,0 +1,89 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2>Restaurantes de La Carta</h2>
+
+    <!-- Solo admin puede crear restaurantes -->
+    {% if 'write:carta' in permisos %}
+        <a href="{{ url_for('crear_restaurante') }}"
+           class="btn btn-primary mb-3">
+            Registrar Nuevo Restaurante
+        </a>
+    {% endif %}
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Ciudad</th>
+
+                <!-- La columna Acciones es solo para admin -->
+                {% if 'write:carta' in permisos or 'delete:carta' in permisos %}
+                    <th>Acciones</th>
+                {% endif %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for r in restaurantes %}
+            <tr>
+                <td>{{ r.id }}</td>
+
+                <!-- Cualquier visitante puede ver el restaurante -->
+                <td>
+                    <a href="{{ url_for('detalle_restaurante', restaurante_id=r.id) }}">
+                        {{ r.nombre }}
+                    </a>
+                    <a href="{{ url_for('formulario_pedido', restaurante_id=r.id) }}">
+                        Hacer pedido
+                    </a>
+                </td>
+
+                <td>{{ r.ciudad }}</td>
+
+                {% if 'write:carta' in permisos or 'delete:carta' in permisos %}
+                <td>
+
+                    <!-- Solo quien tiene write:carta puede editar -->
+                    {% if 'write:carta' in permisos %}
+                        <a href="{{ url_for('editar_restaurante', restaurante_id=r.id) }}"
+                           class="btn btn-warning btn-sm">
+                            Editar
+                        </a>
+                    {% endif %}
+
+                    <!-- Solo quien tiene delete:carta puede eliminar -->
+                    {% if 'delete:carta' in permisos %}
+                        <form action="{{ url_for('eliminar_restaurante', restaurante_id=r.id) }}"
+                              method="POST"
+                              style="display:inline;">
+
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('¿Seguro que deseas eliminarlo?');">
+                                Eliminar
+                            </button>
+                        </form>
+                    {% endif %}
+
+                </td>
+                {% endif %}
+            </tr>
+
+            {% else %}
+            <tr>
+                <td colspan="{{ 4 if 'write:carta' in permisos or 'delete:carta' in permisos else 3 }}"
+                    class="text-center">
+                    No hay restaurantes registrados en el sistema.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    {% if 'write:carta' in permisos %}
+
+        <!-- El titulo cambia segun la operacion -->
+        <h2>
+            {% if restaurante %}
+                Editar Restaurante
+            {% else %}
+                Nuevo Restaurante
+            {% endif %}
+        </h2>
+
+        <!-- Solo usuarios con write:carta ven el formulario -->
+        <form action="{{ url_for('editar_restaurante', restaurante_id=restaurante.id) if restaurante else url_for('crear_restaurante') }}"
+              method="POST">
+
+            <div class="mb-3">
+                <label for="nombre" class="form-label">
+                    Nombre del Restaurante *
+                </label>
+
+                <input type="text"
+                       class="form-control"
+                       id="nombre"
+                       name="nombre"
+                       value="{{ restaurante.nombre if restaurante else '' }}"
+                       required>
+            </div>
+
+            <div class="mb-3">
+                <label for="ciudad" class="form-label">
+                    Ciudad *
+                </label>
+
+                <input type="text"
+                       class="form-control"
+                       id="ciudad"
+                       name="ciudad"
+                       value="{{ restaurante.ciudad if restaurante else '' }}"
+                       required>
+            </div>
+
+            <div class="mb-3">
+                <label for="direccion" class="form-label">
+                    Dirección
+                </label>
+
+                <input type="text"
+                       class="form-control"
+                       id="direccion"
+                       name="direccion"
+                       value="{{ (restaurante.direccion or '') if restaurante else '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="telefono" class="form-label">
+                    Teléfono
+                </label>
+
+                <input type="text"
+                       class="form-control"
+                       id="telefono"
+                       name="telefono"
+                       value="{{ (restaurante.telefono or '') if restaurante else '' }}">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Guardar
+            </button>
+
+            <a href="{{ url_for('listar_restaurantes') }}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+
+        </form>
+
+    {% else %}
+
+        <!-- Mensaje de respaldo para usuarios sin permiso -->
+        <div class="alert alert-danger">
+            No tienes permiso para crear o editar restaurantes.
+        </div>
+
+        <a href="{{ url_for('listar_restaurantes') }}"
+           class="btn btn-secondary">
+            Volver a la carta
+        </a>
+
+    {% endif %}
+
+</div>
+{% endblock %}

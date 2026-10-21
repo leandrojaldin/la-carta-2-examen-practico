@@ -1,0 +1,100 @@
+
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <h2>Iniciar sesión</h2>
+
+    <form id="form-login">
+
+        <div class="mb-3">
+            <label for="usuario" class="form-label">
+                Usuario:
+            </label>
+
+            <input
+                type="text"
+                class="form-control"
+                id="usuario"
+                name="usuario"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label for="contrasena" class="form-label">
+                Contraseña:
+            </label>
+
+            <input
+                type="password"
+                class="form-control"
+                id="contrasena"
+                name="contrasena"
+                required
+            >
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Iniciar sesión
+        </button>
+
+    </form>
+
+    <p id="mensaje-login" role="status"></p>
+
+</div>
+
+<script>
+document.getElementById("form-login").addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const username = document.getElementById("usuario").value.trim();
+    const password = document.getElementById("contrasena").value;
+    const mensaje = document.getElementById("mensaje-login");
+
+    mensaje.textContent = "Verificando credenciales...";
+
+    // Descartar cualquier token anterior antes de intentar el login.
+    sessionStorage.removeItem("access_token");
+
+    try {
+        const respuesta = await fetch("/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            mensaje.textContent = datos.message || "Credenciales incorrectas";
+            return;
+        }
+
+        if (!datos.access_token) {
+            mensaje.textContent = "El servidor no devolvió un token.";
+            return;
+        }
+
+        sessionStorage.setItem("access_token", datos.access_token);
+
+        mensaje.textContent = "Inicio de sesión exitoso.";
+
+        window.location.href = "/restaurantes";
+
+    } catch (error) {
+        mensaje.textContent = "No se pudo conectar con el servidor.";
+        console.error("Error durante login:", error);
+    }
+});
+</script>
+
+{% endblock %}

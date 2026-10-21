@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}Detalle de {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+    <h2>{{ restaurante.nombre }}</h2>
+    <p><b>Ciudad:</b> {{ restaurante.ciudad }}</p>
+    <p><b>Dirección:</b> {{ restaurante.direccion }}</p>
+    <p><b>Teléfono:</b> {{ restaurante.telefono }}</p>
+
+    <a href="{{ url_for('editar_restaurante', restaurante_id=restaurante.id) }}">Editar Sucursal</a>
+    
+    <form action="{{ url_for('eliminar_restaurante', restaurante_id=restaurante.id) }}" method="POST" style="display:inline;">
+        <button type="submit" onclick="return confirm('¿Seguro que deseas eliminar esta sucursal?');">Eliminar Sucursal</button>
+    </form>
+
+    <hr>
+
+    <h3>Menú (Platos registrados)</h3>
+    
+    {% if restaurante.platos %}
+        <ul>
+            {% for plato in restaurante.platos %}
+                <li>{{ plato.nombre }} - Bs. {{ plato.precio }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay platos registrados en esta sucursal todavía.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Agregar Nuevo Plato</h3>
+    <form action="{{ url_for('agregar_plato', restaurante_id=restaurante.id) }}" method="POST">
+        <label for="nombre">Nombre del Plato:</label><br>
+        <input type="text" id="nombre" name="nombre" required><br><br>
+
+        <label for="precio">Precio (Bs.):</label><br>
+        <input type="number" step="0.01" min="0.01" id="precio" name="precio" required><br><br>
+
+        <button type="submit">Guardar Plato</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('listar_restaurantes') }}">Volver al listado</a>
+{% endblock %}

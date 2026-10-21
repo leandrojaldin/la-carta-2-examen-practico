@@ -1,7 +1,8 @@
 Flask==3.0.2
 Flask-SQLAlchemy==3.1.1
 psycopg2-binary==2.9.9
-Flask-Migrate==4.0.5
 gunicorn==21.2.0
-PyJWT==2.15.1
+PyJWT[crypto]==2.15.1
 SQLAlchemy==2.0.54
+Authlib==1.6.12
+requests==2.32.5

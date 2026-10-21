@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}La Carta{% endblock %}</title>
+</head>
+
+<body>
+    <header>
+        <h1>La Carta</h1>
+
+        <nav>
+            <!-- La carta es publica para todos -->
+            <a href="{{ url_for('listar_restaurantes') }}">
+                Ver Restaurantes
+
+            {% if 'read:mis-pedidos' in permisos %}
+                <a href="{{ url_for('mis_pedidos') }}">
+                    Mis pedidos
+                </a>
+            {% endif %}
+
+            {% if 'read:pedidos' in permisos %}
+                <a href="{{ url_for('cola_cocina') }}">
+                    Cola de cocina
+                </a>
+            {% endif %}
+            </a>
+
+            <!-- Solo administradores pueden crear restaurantes -->
+            {% if 'write:carta' in permisos %}
+                <a href="{{ url_for('crear_restaurante') }}">
+                    Crear Restaurante
+                </a>
+            {% endif %}
+
+            <!-- Login y logout de Auth0 -->
+            {% if session.get('access_token') %}
+                <form method="POST"
+                      action="{{ url_for('auth0.logout_auth0') }}"
+                      style="display:inline;">
+
+                    <button type="submit">
+                        Cerrar sesión
+                    </button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('auth0.login_auth0') }}">
+                    Iniciar sesión
+                </a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        <!-- Mensajes flash de Flask -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li><b>{{ message }}</b></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Contenido de las otras plantillas -->
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

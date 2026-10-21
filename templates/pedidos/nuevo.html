@@ -1,0 +1,71 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Hacer pedido - La Carta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2>Hacer pedido</h2>
+    <h3>{{ restaurante.nombre }}</h3>
+
+    <p>Selecciona los platos que deseas pedir.</p>
+
+    {% if 'create:pedidos' in permisos %}
+
+        {% if platos %}
+            <form method="POST"
+                  action="{{ url_for('guardar_pedido_web', restaurante_id=restaurante.id) }}">
+
+                {% for plato in platos %}
+                    <div class="mb-3">
+
+                        <label>
+                            <input type="checkbox"
+                                   name="plato_id"
+                                   value="{{ plato.id }}">
+
+                            {{ plato.nombre }}
+                            — Bs {{ plato.precio }}
+                        </label>
+
+                        <label>
+                            Cantidad:
+                            <input type="number"
+                                   name="cantidad_{{ plato.id }}"
+                                   min="1"
+                                   max="20"
+                                   value="1">
+                        </label>
+
+                    </div>
+                {% endfor %}
+
+                <button type="submit">
+                    Confirmar pedido
+                </button>
+            </form>
+
+        {% else %}
+            <p>No hay platos disponibles.</p>
+        {% endif %}
+
+    {% else %}
+        <p>
+            Necesitas iniciar sesión con el rol cliente
+            para realizar pedidos.
+        </p>
+
+        <a href="{{ url_for('auth0.login_auth0', next=request.path) }}">
+            Iniciar sesión
+        </a>
+    {% endif %}
+
+    <p>
+        <a href="{{ url_for('detalle_restaurante', restaurante_id=restaurante.id) }}">
+            Volver al restaurante
+        </a>
+    </p>
+
+</div>
+{% endblock %}
