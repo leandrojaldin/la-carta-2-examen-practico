@@ -10,7 +10,8 @@ from datetime import datetime, timezone
 ##Registro de la api de restuarantes
 
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from sqlalchemy.exc import SQLAlchemyError
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 from auth0_integration import (
@@ -507,6 +508,75 @@ def agregar_plato(payload, restaurante_id):
 
     return redirect(url_for('detalle_restaurante', restaurante_id=restaurante_encontrado.id))
 
+
+# ==========================================
+# R2 - EDITAR PLATOS (ADMIN)
+# ==========================================
+
+@app.route("/platos/<int:plato_id>/editar", methods=["GET", "POST"])
+@requires_auth("write:carta") 
+def editar_plato(payload, plato_id):
+
+    plato = db.get_or_404(Plato, plato_id)
+
+    if request.method == "GET":
+        return render_template(
+            "restaurantes/editar_plato.html",
+            plato=plato,
+            error=None
+        )
+
+    nombre = request.form.get("nombre", "").strip()
+    precio_texto = request.form.get("precio", "").strip()
+
+    if not nombre or len(nombre) > 120:
+        return render_template(
+            "restaurantes/editar_plato.html",
+            plato=plato,
+            error="El nombre debe tener entre 1 y 120 caracteres."
+        ), 400
+
+    try:
+        precio = Decimal(precio_texto)
+    except InvalidOperation:
+        return render_template(
+            "restaurantes/editar_plato.html",
+            plato=plato,
+            error="El precio debe ser un numero valido."
+        ), 400
+
+    if (
+        not precio.is_finite()
+        or precio <= 0
+        or precio > Decimal("99999999.99")
+        or precio != precio.quantize(Decimal("0.01"))
+    ):
+        return render_template(
+            "restaurantes/editar_plato.html",
+            plato=plato,
+            error="El precio debe ser positivo y tener maximo dos decimales."
+        ), 400
+
+    try:
+        plato.nombre = nombre
+        plato.precio = precio
+        plato.disponible = "disponible" in request.form
+
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        app.logger.exception("Error al editar plato %s", plato_id)
+
+        return "Error al guardar el plato.", 500
+
+    return redirect(
+        url_for(
+            "detalle_restaurante",
+            restaurante_id=plato.restaurante_id
+        ),
+        code=303
+    )
 
 # ==========================================
 # PEDIDOS WEB - R1 Y R2

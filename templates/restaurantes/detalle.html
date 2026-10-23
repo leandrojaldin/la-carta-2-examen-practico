@@ -43,6 +43,11 @@ Detalle de {{ restaurante.nombre }}
         {% for plato in restaurante.platos %}
             <li>
                 {{ plato.nombre }} - Bs. {{ plato.precio }}
+                {% if 'write:carta' in permisos %}
+                    <a href="{{ url_for('editar_plato', plato_id=plato.id) }}"></a>
+                        Editar Plato
+                    </a>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
