@@ -1,0 +1,77 @@
+
+{% extends "layout.html" %}
+
+{% block title %}
+Editar plato - La Carta
+{% endblock %}
+
+{% block content %}
+
+<h2>Editar Plato</h2>
+
+<p>Restaurante: {{ plato.restaurante.nombre }}</p>
+
+{% if 'write:carta' in permisos %}
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST"
+          action="{{ url_for('editar_plato', plato_id=plato.id) }}">
+
+        <p>
+            <label>Nombre:</label>
+
+            <input
+                type="text"
+                name="nombre"
+                maxlength="120"
+                value="{{ request.form.get('nombre', plato.nombre) }}"
+                required
+            >
+        </p>
+
+        <p>
+            <label>Precio (Bs.):</label>
+
+            <input
+                type="number"
+                name="precio"
+                step="0.01"
+                min="0.01"
+                value="{{ request.form.get('precio', plato.precio) }}"
+                required
+            >
+        </p>
+
+        <p>
+            <label>
+                <input
+                    type="checkbox"
+                    name="disponible"
+                    {% if request.method == 'GET' and plato.disponible
+                          or request.method == 'POST' and request.form.get('disponible') %}
+                        checked
+                    {% endif %}
+                >
+                Disponible
+            </label>
+        </p>
+
+        <button type="submit">
+            Guardar cambios
+        </button>
+    </form>
+
+{% else %}
+    <p>No tienes permiso para editar platos.</p>
+{% endif %}
+
+<p>
+    <a href="{{ url_for('detalle_restaurante', restaurante_id=plato.restaurante_id) }}">
+        Volver al restaurante
+    </a>
+</p>
+
+{% endblock %}
