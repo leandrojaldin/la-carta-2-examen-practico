@@ -1,94 +1,134 @@
 
 {% extends "layout.html" %}
 
-{% block title %}
-Detalle de {{ restaurante.nombre }}
-{% endblock %}
+{% block title %}Detalle de {{ restaurante.nombre }}{% endblock %}
 
 {% block content %}
+
+<style>
+    .acciones-restaurante {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 18px 0;
+    }
+
+    .acciones-restaurante form {
+        margin: 0;
+    }
+
+    .lista-platos li {
+        margin-bottom: 12px;
+    }
+
+    .enlace-editar {
+        display: inline-block;
+        margin-left: 16px;
+    }
+
+    .formulario-plato {
+        margin-top: 20px;
+    }
+
+    .formulario-plato p {
+        margin-bottom: 12px;
+    }
+</style>
 
 <h2>{{ restaurante.nombre }}</h2>
 
 <p><b>Ciudad:</b> {{ restaurante.ciudad }}</p>
-<p><b>Direccion:</b> {{ restaurante.direccion }}</p>
-<p><b>Telefono:</b> {{ restaurante.telefono }}</p>
+<p><b>Dirección:</b> {{ restaurante.direccion }}</p>
+<p><b>Teléfono:</b> {{ restaurante.telefono }}</p>
 
-{% if 'write:carta' in permisos %}
-    <a href="{{ url_for('editar_restaurante', restaurante_id=restaurante.id) }}">
-        Editar Sucursal
-    </a>
-{% endif %}
+<div class="acciones-restaurante">
 
-{% if 'delete:carta' in permisos %}
-    <form
-        action="{{ url_for('eliminar_restaurante', restaurante_id=restaurante.id) }}"
-        method="POST"
-        style="display:inline;"
-    >
-        <button
-            type="submit"
-            onclick="return confirm('¿Seguro que deseas eliminar esta sucursal?');"
+    {% if 'write:carta' in permisos %}
+        <a href="{{ url_for('editar_restaurante', restaurante_id=restaurante.id) }}">
+            Editar Sucursal
+        </a>
+    {% endif %}
+
+    {% if 'delete:carta' in permisos %}
+        <form
+            action="{{ url_for('eliminar_restaurante', restaurante_id=restaurante.id) }}"
+            method="POST"
         >
-            Eliminar Sucursal
-        </button>
-    </form>
-{% endif %}
+            <button type="submit"
+                onclick="return confirm('¿Seguro que deseas eliminar esta sucursal?');">
+                Eliminar Sucursal
+            </button>
+        </form>
+    {% endif %}
+
+</div>
 
 <hr>
 
-<h3>Menu (Platos registrados)</h3>
+<h3>Menú (Platos registrados)</h3>
 
 {% if restaurante.platos %}
-    <ul>
+
+    <ul class="lista-platos">
+
         {% for plato in restaurante.platos %}
             <li>
+                Plato #{{ plato.id }}:
                 {{ plato.nombre }} - Bs. {{ plato.precio }}
+
                 {% if 'write:carta' in permisos %}
-                    <a href="{{ url_for('editar_plato', plato_id=plato.id) }}"></a>
-                        Editar Plato
+                    <a
+                        class="enlace-editar"
+                        href="{{ url_for('editar_plato', plato_id=plato.id) }}"
+                    >
+                        Editar plato
                     </a>
                 {% endif %}
             </li>
         {% endfor %}
+
     </ul>
+
 {% else %}
-    <p>No hay platos registrados en esta sucursal todavía.</p>
+    <p>No hay platos registrados.</p>
 {% endif %}
 
 <hr>
 
 {% if 'write:carta' in permisos %}
 
-    <h3>Agregar Nuevo Plato</h3>
+    <div class="formulario-plato">
+        <h3>Agregar Nuevo Plato</h3>
 
-    <form
-        action="{{ url_for('agregar_plato', restaurante_id=restaurante.id) }}"
-        method="POST"
-    >
-        <label for="nombre">Nombre del Plato:</label>
-        <input
-            type="text"
-            id="nombre"
-            name="nombre"
-            required
+        <form
+            action="{{ url_for('agregar_plato', restaurante_id=restaurante.id) }}"
+            method="POST"
         >
+            <p>
+                <label for="nombre">Nombre del Plato:</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    required
+                >
+            </p>
 
-        <br><br>
+            <p>
+                <label for="precio">Precio (Bs.):</label>
+                <input
+                    type="number"
+                    id="precio"
+                    name="precio"
+                    step="0.01"
+                    min="0.01"
+                    required
+                >
+            </p>
 
-        <label for="precio">Precio (Bs.):</label>
-        <input
-            type="number"
-            step="0.01"
-            min="0.01"
-            id="precio"
-            name="precio"
-            required
-        >
-
-        <br><br>
-
-        <button type="submit">Guardar Plato</button>
-    </form>
+            <button type="submit">Guardar Plato</button>
+        </form>
+    </div>
 
 {% endif %}
 
