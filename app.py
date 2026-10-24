@@ -578,6 +578,76 @@ def editar_plato(payload, plato_id):
         code=303
     )
 
+
+
+# ==========================================
+# R2 - ELIMINAR O RETIRAR PLATOS
+# ==========================================
+
+
+# ==========================================
+# R2 - ELIMINAR O RETIRAR PLATOS
+# ==========================================
+
+@app.post("/platos/<int:plato_id>/eliminar")
+@requires_auth("delete:carta")
+def eliminar_plato(payload, plato_id):
+
+    plato = db.get_or_404(Plato, plato_id)
+
+    restaurante_id = plato.restaurante_id
+    nombre_plato = plato.nombre
+
+    try:
+        # Comprobar si el plato aparece en pedidos.
+        tiene_pedidos = (
+            db.session.query(ItemPedido.id)
+            .filter(ItemPedido.plato_id == plato_id)
+            .first()
+            is not None
+        )
+
+        if tiene_pedidos:
+            # No borrar los datos historicos.
+            plato.disponible = False
+            mensaje = (
+                f'Plato "{nombre_plato}" retirado de la carta. '
+                'Se conservaron sus pedidos historicos.'
+            )
+        else:
+            # Si nunca fue pedido, puede eliminarse.
+            db.session.delete(plato)
+            mensaje = (
+                f'Plato "{nombre_plato}" eliminado correctamente.'
+            )
+
+        db.session.commit()
+        flash(mensaje)
+
+    except SQLAlchemyError:
+        db.session.rollback()
+
+        app.logger.exception(
+            "Error al eliminar plato %s",
+            plato_id
+        )
+
+        return render_template(
+            "auth0_error.html",
+            status=500,
+            mensaje="No se pudo eliminar el plato."
+        ), 500
+
+    return redirect(
+        url_for(
+            "detalle_restaurante",
+            restaurante_id=restaurante_id
+        ),
+        code=303
+    )
+
+
+
 # ==========================================
 # PEDIDOS WEB - R1 Y R2
 # ==========================================

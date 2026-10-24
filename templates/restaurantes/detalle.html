@@ -70,23 +70,44 @@
 {% if restaurante.platos %}
 
     <ul class="lista-platos">
-
+        
         {% for plato in restaurante.platos %}
-            <li>
-                Plato #{{ plato.id }}:
-                {{ plato.nombre }} - Bs. {{ plato.precio }}
+            {% if plato.disponible or 'write:carta' in permisos or 'delete:carta' in permisos %}
+                 <li>
+                    Plato #{{ plato.id }}:
+                    {{ plato.nombre }} - Bs. {{ plato.precio }}
 
-                {% if 'write:carta' in permisos %}
-                    <a
-                        class="enlace-editar"
-                        href="{{ url_for('editar_plato', plato_id=plato.id) }}"
-                    >
-                        Editar plato
+                    {% if not plato.disponible %}
+                    <strong>(Retirado de la carta)</strong>
+                    {% endif %}
+
+                    {% if 'write:carta' in permisos %}
+                        <a  
+                            class="enlace-editar"
+                            href="{{ url_for('editar_plato', plato_id=plato.id) }}"
+                        >
+                            Editar Plato
                     </a>
-                {% endif %}
-            </li>
+                    {% endif %}
+                    
+                    {% if 'delete:carta' in permisos and plato.disponible %}
+                        <form
+                            method="POST"
+                            action="{{ url_for('eliminar_plato', plato_id=plato.id) }}"
+                            style="display:inline-block; margin-left:12px;"
+                        >
+                            <button
+                                type="submit"
+                                onclick="return confirm('¿Eliminar o retirar este plato de la carta?');"
+                            >
+                                Eliminar Plato
+                            </button>
+                        </form>
+                    {% endif %}
+                 </li>
+            {% endif %}
         {% endfor %}
-
+        
     </ul>
 
 {% else %}
