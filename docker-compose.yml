@@ -38,10 +38,15 @@ services:
   django:
     build: ./django_app
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:5000"
     environment: *django_env
     depends_on:
       migrate:
         condition: service_completed_successfully
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             exec gunicorn --bind 0.0.0.0:5000 config.wsgi:application"
 
   web:
     build: .
