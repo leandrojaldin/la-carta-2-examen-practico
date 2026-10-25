@@ -31,9 +31,25 @@ load_dotenv(env_path)
 SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 ## Truco que dice en pdf para convertir el texto a un valor booleano
+
 DEBUG = os.environ.get('DEBUG', False) == 'True'
-ALLOWED_HOSTS = ['*']
-##ALLOWED_HOSTS = ['127.0.0.1']
+
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'admin.lacarta-jaldin.chickenkiller.com',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://admin.lacarta-jaldin.chickenkiller.com',
+]
+
+SECURE_PROXY_SSL_HEADER = (
+    'HTTP_X_FORWARDED_PROTO',
+    'https',
+)
+
+
 
 # Application definition
 
