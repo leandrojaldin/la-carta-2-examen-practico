@@ -1,3 +1,4 @@
+
 # La Carta 2.0 — Examen Práctico de Aplicaciones Web
 
 ## Descripción
@@ -82,30 +83,118 @@ Los permisos también se comprueban en el servidor, independientemente de que lo
 
 ## Ejecución local
 
-El proyecto requiere Docker, Docker Compose y credenciales propias de Auth0.
+El proyecto requiere Git, Docker Desktop (o Docker Engine con Compose v2) y una aplicación de Auth0 configurada.
 
-La configuración privada debe guardarse en `.env`, sin subir contraseñas ni secretos al repositorio.
+En PowerShell de Windows:
 
-Variables relevantes:
+```powershell
+git clone https://github.com/leandrojaldin/la-carta-2-examen-practico.git
+cd la-carta-2-examen-practico
+Copy-Item .env.example .env
+```
 
-- `AUTH0_DOMAIN`
-- `AUTH0_AUDIENCE`
-- `AUTH0_CLIENT_ID`
-- `AUTH0_CLIENT_SECRET`
-- `SECRET_KEY`
-- Variables de conexión a PostgreSQL
+Editar el nuevo archivo `.env` y reemplazar los valores `REEMPLAZAR` por credenciales propias o las proporcionadas **de forma privada** para la evaluación:
 
-Para construir e iniciar los servicios:
+| Variable | Uso |
+|---|---|
+| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL. |
+| `SECRET_KEY` | Clave para las sesiones y configuración de las aplicaciones. |
+| `JWT_SECRET_KEY` | Variable requerida por la configuración del proyecto. |
+| `AUTH0_DOMAIN` | Dominio del tenant, sin `https://`. |
+| `AUTH0_AUDIENCE` | Identificador exacto de la API en Auth0. |
+| `AUTH0_CLIENT_ID` | Client ID de la aplicación Auth0. |
+| `AUTH0_CLIENT_SECRET` | Client Secret de la aplicación Auth0. |
+| `SESSION_COOKIE_SECURE` | `0` en HTTP local, `1` con HTTPS. |
+| `BEHIND_PROXY` | `0` en Docker local, `1` detrás de Nginx. |
 
-`docker compose up -d --build`
+Para construir e iniciar los servicios con Docker Desktop abierto:
 
-La aplicación Flask se encuentra disponible localmente en:
+```powershell
+docker compose config --quiet
+docker compose up -d --build
+docker compose ps -a
+```
 
-`http://localhost:5001/restaurantes`
+Se espera que `db` esté **healthy**, `web` y `django` estén **Up**, y `migrate` pueda mostrar **Exited (0)** después de aplicar las migraciones.
+
+Enlaces locales:
+
+| Servicio | URL |
+|---|---|
+| Flask — restaurantes | http://localhost:5001/restaurantes |
+| Flask — iniciar sesión | http://localhost:5001/login |
+| Flask — mis pedidos | http://localhost:5001/mis-pedidos |
+| Flask — cocina | http://localhost:5001/cocina |
+| Flask — ver permisos del usuario | http://localhost:5001/auth/quien-soy |
+| Django Admin | http://localhost:8001/admin/ |
+
+Una instalación limpia no incluye necesariamente restaurantes ni platos de demostración. Se pueden cargar desde Django Admin después de crear un superusuario:
+
+```powershell
+docker compose exec django python manage.py createsuperuser
+```
+
+El superusuario de **Django Admin es independiente** de los usuarios y roles de Auth0.
 
 Para detener los servicios sin eliminar el volumen de PostgreSQL:
 
-`docker compose down`
+```powershell
+docker compose down
+```
+
+No utilizar `docker compose down -v` si se quieren conservar los datos.
+
+## Configuración de Auth0 para evaluación
+
+**Importante:** clonar GitHub y ejecutar Docker no crea automáticamente las cuentas de Auth0. Los usuarios, roles y permisos están almacenados en el tenant de Auth0, fuera del repositorio.
+
+### 1. Configurar la aplicación y la API
+
+En [Auth0 Dashboard](https://manage.auth0.com/):
+
+1. En **Applications → Applications**, seleccionar o crear una aplicación de tipo **Regular Web Application**.
+2. Copiar su `Client ID`, `Client Secret` y dominio del tenant al archivo `.env`.
+3. En **Applications → APIs**, utilizar una API cuyo **Identifier** coincida exactamente con `AUTH0_AUDIENCE`.
+4. En la configuración de la API, habilitar **RBAC** y **Add Permissions in the Access Token**.
+
+### 2. Registrar URLs de localhost
+
+Dentro de **Applications → Applications → [aplicación] → Settings → Application URIs**, configurar:
+
+| Campo de Auth0 | Valor local |
+|---|---|
+| **Allowed Callback URLs** | `http://localhost:5001/auth/callback` |
+| **Allowed Logout URLs** | `http://localhost:5001/` |
+| **Allowed Web Origins** | `http://localhost:5001` |
+
+Guardar con **Save Changes**. Si se usa la misma aplicación para producción, mantener también sus URLs HTTPS; no es necesario borrar las URLs de localhost.
+
+### 3. Configurar roles y usuarios de prueba
+
+En **User Management → Roles**, crear los siguientes roles y asignarles los permisos de la API:
+
+| Rol | Permisos requeridos | Prueba sugerida |
+|---|---|---|
+| `cliente` | `create:pedidos`, `read:mis-pedidos` | Crear un pedido y consultar sus pedidos. |
+| `cocina` | `read:pedidos`, `update:pedidos` | Ver la cola y avanzar un pedido. |
+| `admin` | `read:pedidos`, `write:carta`, `delete:carta` | Gestionar restaurantes y platos desde Flask. |
+
+En **User Management → Users**, crear o utilizar tres **cuentas de prueba** y asignarles el rol correspondiente desde la pestaña **Roles**.
+
+Si el evaluador utiliza el tenant Auth0 del autor, necesita recibir **por un canal privado** la configuración `.env` de evaluación y las credenciales temporales de las cuentas de prueba. Si utiliza su propio tenant, debe crear la aplicación, la API y los roles anteriores.
+
+**Nunca publicar contraseñas, Client Secrets, archivos `.env` ni credenciales de cuentas personales en este README o en GitHub.**
+
+### 4. Verificar inicio de sesión y permisos
+
+1. Abrir `http://localhost:5001/restaurantes`.
+2. Entrar a `http://localhost:5001/login` e iniciar sesión con un usuario de prueba.
+3. Visitar `http://localhost:5001/auth/quien-soy` para comprobar los permisos presentes en su token.
+4. Como `cliente`, crear un pedido y consultarlo en `/mis-pedidos`.
+5. Como `cocina`, entrar a `/cocina` y avanzar el estado de un pedido.
+6. Como `admin`, utilizar `/restaurantes/crear` para administrar la carta.
+
+Cerrar sesión desde el botón de la interfaz. La ruta `/auth/logout` acepta el método **POST**, por lo que abrirla directamente en una pestaña mediante GET puede producir **405 Method Not Allowed**.
 
 ## Funcionalidades implementadas
 
@@ -144,9 +233,9 @@ Quedaron pendientes de completar o verificar:
 - Todos los casos negativos y las seis pruebas automatizadas con pytest.
 - Ajustes de edición de ítems dentro de Django Admin.
 - Revisión completa de la gestión de platos.
-- Despliegue público en EC2 con Nginx, dos subdominios y HTTPS.
+- Un despliegue público **persistente** en EC2 con Nginx, dos subdominios y HTTPS.
 
-No se declara completado el despliegue HTTPS ni una cobertura de pruebas que todavía no se ha demostrado.
+Durante el desarrollo se comprobó el despliegue HTTPS en un laboratorio temporal de AWS Academy; sin embargo, dicho laboratorio elimina recursos al finalizar la sesión y no se garantiza que el servicio público permanezca activo. No se declara cobertura de pruebas que todavía no se haya demostrado.
 
 ## Estructura principal del proyecto
 
