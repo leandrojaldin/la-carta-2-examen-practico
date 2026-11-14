@@ -170,6 +170,13 @@ class ItemPedido(db.Model):
     plato = db.relationship("Plato")
 
 
+class Empleado(db.Model):
+    __tablename__ = "empleados"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    cargo = db.Column(db.String(100), nullable=False)
+
 # ==========================================
 # REGLAS DE NEGOCIO DE PEDIDOS - R1
 # ==========================================
@@ -480,6 +487,121 @@ def eliminar_restaurante(payload, restaurante_id):
 # ==========================================
 # FIN DEL CRUD DE RESTAURANTES
 # ==========================================
+
+
+# ==========================================
+# CRUD DE EMPLEADOS
+# ==========================================
+@app.get("/empleados")
+@requires_auth("write:carta")
+def listar_empleados(payload):
+    empleados = Empleado.query.order_by(Empleado.id.asc()).all()
+    return render_template("empleados/index.html", empleados=empleados)
+
+
+@app.route("/empleados/crear", methods=["GET", "POST"])
+@requires_auth("write:carta")
+def crear_empleado(payload):
+    if request.method == "GET":
+        return render_template(
+            "empleados/formulario.html",
+            empleado=None,
+            error=None,
+        )
+
+    nombre = request.form.get("nombre", "").strip()
+    cargo = request.form.get("cargo", "").strip()
+
+    if not nombre or not cargo:
+        return render_template(
+            "empleados/formulario.html",
+            empleado=None,
+            error="Nombre y cargo son obligatorios.",
+        ), 400
+
+    if len(nombre) > 100 or len(cargo) > 100:
+        return render_template(
+            "empleados/formulario.html",
+            empleado=None,
+            error="Nombre y cargo deben tener como máximo 100 caracteres.",
+        ), 400
+
+    empleado = Empleado(nombre=nombre, cargo=cargo)
+
+    try:
+        db.session.add(empleado)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        app.logger.exception("Error al crear empleado")
+        return "Error al guardar el empleado.", 500
+
+    flash(f'Empleado "{empleado.nombre}" creado con éxito.')
+    return redirect(url_for("listar_empleados"), code=303)
+
+
+@app.route("/empleados/<int:empleado_id>/editar", methods=["GET", "POST"])
+@requires_auth("write:carta")
+def editar_empleado(payload, empleado_id):
+    empleado = db.get_or_404(Empleado, empleado_id)
+
+    if request.method == "GET":
+        return render_template(
+            "empleados/formulario.html",
+            empleado=empleado,
+            error=None,
+        )
+
+    nombre = request.form.get("nombre", "").strip()
+    cargo = request.form.get("cargo", "").strip()
+
+    if not nombre or not cargo:
+        return render_template(
+            "empleados/formulario.html",
+            empleado=empleado,
+            error="Nombre y cargo son obligatorios.",
+        ), 400
+
+    if len(nombre) > 100 or len(cargo) > 100:
+        return render_template(
+            "empleados/formulario.html",
+            empleado=empleado,
+            error="Nombre y cargo deben tener como máximo 100 caracteres.",
+        ), 400
+
+    try:
+        empleado.nombre = nombre
+        empleado.cargo = cargo
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        app.logger.exception("Error al editar empleado %s", empleado_id)
+        return "Error al guardar el empleado.", 500
+
+    flash(f'Empleado "{empleado.nombre}" actualizado con éxito.')
+    return redirect(url_for("listar_empleados"), code=303)
+
+
+@app.route("/empleados/<int:empleado_id>/eliminar", methods=["GET", "POST"])
+@requires_auth("delete:carta")
+def eliminar_empleado(payload, empleado_id):
+    empleado = db.get_or_404(Empleado, empleado_id)
+
+    if request.method == "GET":
+        return render_template("empleados/confirmar_eliminacion.html", empleado=empleado)
+
+    nombre = empleado.nombre
+
+    try:
+        db.session.delete(empleado)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        app.logger.exception("Error al eliminar empleado %s", empleado_id)
+        return "Error al eliminar el empleado.", 500
+
+    flash(f'Empleado "{nombre}" eliminado con éxito.')
+    return redirect(url_for("listar_empleados"), code=303)
 
 
 # RUTA PARA AGREGAR PLATOS AL MENÚ

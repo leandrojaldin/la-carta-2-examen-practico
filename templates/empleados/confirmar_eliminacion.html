@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}Eliminar empleado - La Carta{% endblock %}
+
+{% block content %}
+<h2>Confirmar eliminación</h2>
+
+<p>
+    ¿Deseas eliminar al empleado <strong>{{ empleado.nombre }}</strong>, con cargo
+    <strong>{{ empleado.cargo }}</strong>?
+</p>
+
+<form method="POST" action="{{ url_for('eliminar_empleado', empleado_id=empleado.id) }}">
+    <button type="submit">Sí, eliminar</button>
+    <a href="{{ url_for('listar_empleados') }}">Cancelar</a>
+</form>
+{% endblock %}
