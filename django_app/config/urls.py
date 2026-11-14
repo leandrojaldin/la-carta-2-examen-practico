@@ -16,7 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from .auth0_views import auth0_login, auth0_callback, auth0_logout
 
 urlpatterns = [
+    path('admin/login/', auth0_login, name='admin_login'),
+    path('admin/logout/', auth0_logout, name='admin_logout'),
+    path('auth/callback/', auth0_callback, name='auth0_callback'),
     path('admin/', admin.site.urls),
 ]

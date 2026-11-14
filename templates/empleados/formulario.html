@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if empleado %}Editar empleado{% else %}Nuevo empleado{% endif %} - La Carta{% endblock %}
+
+{% block content %}
+<h2>{% if empleado %}Editar empleado{% else %}Nuevo empleado{% endif %}</h2>
+
+{% if error %}
+    <p><strong>{{ error }}</strong></p>
+{% endif %}
+
+<form
+    method="POST"
+    action="{{ url_for('editar_empleado', empleado_id=empleado.id) if empleado else url_for('crear_empleado') }}"
+>
+    <p>
+        <label for="nombre">Nombre</label>
+        <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            maxlength="100"
+            required
+            value="{{ request.form.get('nombre', empleado.nombre if empleado else '') }}"
+        >
+    </p>
+
+    <p>
+        <label for="cargo">Cargo</label>
+        <input
+            type="text"
+            id="cargo"
+            name="cargo"
+            maxlength="100"
+            required
+            value="{{ request.form.get('cargo', empleado.cargo if empleado else '') }}"
+        >
+    </p>
+
+    <button type="submit">Guardar</button>
+    <a href="{{ url_for('listar_empleados') }}">Cancelar</a>
+</form>
+{% endblock %}

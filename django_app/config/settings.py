@@ -49,6 +49,14 @@ SECURE_PROXY_SSL_HEADER = (
     'https',
 )
 
+# El mismo cliente Auth0 que Flask; Django mantiene su propia sesión.
+AUTH0_DOMAIN = os.environ.get('AUTH0_DOMAIN', '')
+AUTH0_CLIENT_ID = os.environ.get('AUTH0_CLIENT_ID', '')
+AUTH0_CLIENT_SECRET = os.environ.get('AUTH0_CLIENT_SECRET', '')
+AUTH0_DJANGO_ADMIN_SUB = os.environ.get('AUTH0_DJANGO_ADMIN_SUB', '')
+AUTH0_DJANGO_ADMIN_USERNAME = os.environ.get('AUTH0_DJANGO_ADMIN_USERNAME', '')
+AUTHENTICATION_BACKENDS = ['config.auth0_backend.Auth0AdminBackend']
+
 
 
 # Application definition

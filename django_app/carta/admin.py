@@ -4,7 +4,7 @@ from decimal import Decimal
 from django import forms
 from django.contrib import admin
 
-from .models import Restaurante, Plato, Pedido, ItemPedido
+from .models import Restaurante, Plato, Pedido, ItemPedido, Empleado
 
 
 @admin.register(Restaurante)
@@ -107,3 +107,9 @@ class PedidoAdmin(admin.ModelAdmin):
         )
 
         pedido.total = nuevo_total
+
+
+@admin.register(Empleado)
+class EmpleadoAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre", "cargo")
+    search_fields = ("nombre", "cargo")

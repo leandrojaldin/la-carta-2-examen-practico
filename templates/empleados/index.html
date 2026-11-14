@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block title %}Empleados - La Carta{% endblock %}
+
+{% block content %}
+<h2>Empleados</h2>
+
+{% if 'write:carta' in permisos %}
+    <p>
+        <a href="{{ url_for('crear_empleado') }}">
+            Registrar empleado
+        </a>
+    </p>
+{% endif %}
+
+{% if empleados %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Cargo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for empleado in empleados %}
+                <tr>
+                    <td>{{ empleado.id }}</td>
+                    <td>{{ empleado.nombre }}</td>
+                    <td>{{ empleado.cargo }}</td>
+                    <td>
+                        {% if 'write:carta' in permisos %}
+                            <a href="{{ url_for('editar_empleado', empleado_id=empleado.id) }}">
+                                Editar
+                            </a>
+                        {% endif %}
+
+                        {% if 'delete:carta' in permisos %}
+                            <a href="{{ url_for('eliminar_empleado', empleado_id=empleado.id) }}">
+                                Eliminar
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No hay empleados registrados.</p>
+{% endif %}
+
+<p>
+    <a href="{{ url_for('listar_restaurantes') }}">
+        Volver a la carta
+    </a>
+</p>
+{% endblock %}
